@@ -26,6 +26,31 @@ def mandelbrot_set(xmin, xmax, ymin, ymax, xn, yn, maxiter, horizon=2.0):
     N[N == maxiter-1] = 0
     return Z, N
 
+def renormalize_mandelbrot(Z, N, log_horizon):
+    """
+    Encapsulates normalization function from __main__
+    """
+    # Normalized recount as explained in:
+    # https://linas.org/art-gallery/escape/smooth.html
+    # https://www.ibm.com/developerworks/community/blogs/jfp/entry/My_Christmas_Gift
+
+    # This line will generate warnings for null values but it is faster to
+    # process them afterwards using the nan_to_num
+    with np.errstate(invalid='ignore'):
+        M = np.nan_to_num(N + 1 -
+                          np.log(np.log(abs(Z)))/np.log(2) +
+                          log_horizon)
+    return M
+
+def mandelbrot_image(xmin, xmax, ymin, ymax, xn, yn, maxiter, horizon=2.0):
+    """
+    Helper-function combining mandelbrot_set and the normalization in __main__
+    into one function that returns an array that can be directly visualized
+    with imshow.
+    """
+    log_horizon = np.log(np.log(horizon))/np.log(2)
+    Z, N = mandelbrot_set(xmin, xmax, ymin, ymax, xn, yn, maxiter, horizon)
+    return renormalize_mandelbrot(Z, N, log_horizon)
 
 if __name__ == '__main__':
     import time
@@ -37,19 +62,8 @@ if __name__ == '__main__':
     ymin, ymax, yn = -1.25, +1.25, 2500/2
     maxiter = 200
     horizon = 2.0 ** 40
-    log_horizon = np.log(np.log(horizon))/np.log(2)
-    Z, N = mandelbrot_set(xmin, xmax, ymin, ymax, xn, yn, maxiter, horizon)
 
-    # Normalized recount as explained in:
-    # https://linas.org/art-gallery/escape/smooth.html
-    # https://www.ibm.com/developerworks/community/blogs/jfp/entry/My_Christmas_Gift
-
-    # This line will generate warnings for null values but it is faster to
-    # process them afterwards using the nan_to_num
-    with np.errstate(invalid='ignore'):
-        M = np.nan_to_num(N + 1 -
-                          np.log(np.log(abs(Z)))/np.log(2) +
-                          log_horizon)
+    M = mandelbrot_image(xmin, xmax, ymin, ymax, xn, yn, maxiter, horizon)
 
     dpi = 72
     width = 10
