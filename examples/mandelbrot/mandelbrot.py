@@ -10,6 +10,7 @@ further enhanced thanks to shading.
 The `maxiter` gives the precision of the computation. `maxiter=200` should
 take a few seconds on most modern laptops.
 """
+from __future__ import print_function
 import numpy as np
 
 
@@ -63,7 +64,10 @@ if __name__ == '__main__':
     maxiter = 200
     horizon = 2.0 ** 40
 
+    tic = time.time()
     M = mandelbrot_image(xmin, xmax, ymin, ymax, xn, yn, maxiter, horizon)
+    toc = time.time()
+    print("{:.3f} sec to compute and normalize Mandelbrot set".format(toc - tic))
 
     dpi = 72
     width = 10
