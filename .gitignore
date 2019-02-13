@@ -1,0 +1,15 @@
+# Ignore data
+*.h5
+data/
+
+# Compiled python files
+*.py[cdo]
+
+# Build files & compiled libraries
+*.o
+*.so
+build/
+
+# Text editor files
+*.swp
+*.*~
