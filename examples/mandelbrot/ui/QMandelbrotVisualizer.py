@@ -14,6 +14,7 @@ class QMandelbrotWidget(QMPLWidget):
         # QMPLWidget constructor
         super(QMandelbrotWidget, self).__init__(parent)
         self.zoompoint = None
+        self.image = None
 
         # Link up mouse clicks to setting zoompoint
         self.canvas.mpl_connect('button_press_event', self.mouse_click_callback)
