@@ -14,7 +14,8 @@ class ApplicationWindow(QtGui.QMainWindow):
         super(ApplicationWindow, self).__init__(parent)
         self.setWindowTitle("Mandelbrot Diver")
         # Application attrs
-        self._diving = False    # State variable
+        self._diving = False            # Visualization state variable
+        self._dive_timer_interval = 100 # Dive timer increment, in ms
         
         # Container widget
         self.main_widget = QtGui.QWidget(self)
@@ -37,19 +38,27 @@ class ApplicationWindow(QtGui.QMainWindow):
         self.dive_timer.timeout.connect(self.increment_zoom)
 
         # Compute initial mandelbrot set
-        xmin, xmax, xn = -2.25, 0.75, 3000/2
-        ymin, ymax, yn = -1.25, 1.25, 2500/2
-        maxiter = 200
-        horizon = 2.0 ** 40
+        self.xmin, self.xmax, self.xn = -2.25, 0.75, 3000/2
+        self.ymin, self.ymax, self.yn = -1.25, 1.25, 2500/2
+        self.maxiter = 200
+        self.horizon = 2.0 ** 40
 
-        self.mandelbrot_ary = mandelbrot_image(xmin, xmax, ymin, ymax, xn, yn,
-                                               maxiter, horizon)
+        self.mandelbrot_ary = mandelbrot_image(self.xmin, self.xmax, 
+                                               self.ymin, self.ymax, 
+                                               self.xn, self.yn,
+                                               self.maxiter, self.horizon)
 
         # Set the image 
         self.mpl_mandelbrot.image = \
              self.mpl_mandelbrot.axes.imshow(self.mandelbrot_ary,
-                                             extent=[xmin, xmax, ymin, ymax],
+                                             extent=[self.xmin, 
+                                                     self.xmax, 
+                                                     self.ymin, 
+                                                     self.ymax],
                                              cmap=cm.plasma)
+
+        # Start the application
+        self.start()
 
     def toggle_dive(self):
         if self._diving:
@@ -60,8 +69,25 @@ class ApplicationWindow(QtGui.QMainWindow):
             self._diving = True
 
     def increment_zoom(self):
+        # Increment the degree of zooming, if the visualization is in the
+        # "diving" state
         if self._diving:
-            print 'Increment zoom'
+            # TODO: Modify algorithm to take into account the "zoompoint"
+            self.xmin *= 0.99
+            self.xmax *= 0.99
+            self.ymin *= 0.99
+            self.ymax *= 0.99
+
+        # Update visualization
+        self.mpl_mandelbrot.axes.set_xlim(self.xmin, self.xmax)
+        self.mpl_mandelbrot.axes.set_ylim(self.ymin, self.ymax)
+        self.mpl_mandelbrot.canvas.draw()
+
+    def start(self):
+        """
+        Start the application.
+        """
+        self.dive_timer.start(self._dive_timer_interval)
 
 if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)
