@@ -84,20 +84,17 @@ class ApplicationWindow(QtGui.QMainWindow):
             ylim = self.mpl_mandelbrot.axes.get_ylim()
             xspan = xlim[1] - xlim[0]
             yspan = ylim[1] - ylim[0]
-            xc = xspan / 2
-            yc = yspan / 2
-            # New span after zoom
-            nxspan = xspan * 0.99
-            nyspan = yspan * 0.99
+            xc = xlim[0] + xspan / 2
+            yc = ylim[0] + yspan / 2
             # Set axes limits relative to zoom point
-            if xn < xc:
-                self.mpl_mandelbrot.axes.set_xlim(left=xlim[0] + (xspan - nxspan))
+            if xn > xc:
+                self.mpl_mandelbrot.axes.set_xlim(xlim[0] + 0.01*xspan, xlim[1])
             else:
-                self.mpl_mandelbrot.axes.set_xlim(right=xlim[1] - (xspan - nxspan))
-            if yn < yc:
-                self.mpl_mandelbrot.axes.set_ylim(bottom=ylim[0] + (yspan - nyspan))
+                self.mpl_mandelbrot.axes.set_xlim(xlim[0], xlim[1] - 0.01*xspan)
+            if yn > yc:
+                self.mpl_mandelbrot.axes.set_ylim(ylim[0] + 0.01*yspan, ylim[1])
             else:
-                self.mpl_mandelbrot.axes.set_ylim(top=ylim[1] - (yspan - nyspan))
+                self.mpl_mandelbrot.axes.set_ylim(ylim[0], ylim[1] - 0.01*yspan)
 
         # Update visualization
         self.mpl_mandelbrot.canvas.draw()
