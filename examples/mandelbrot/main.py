@@ -16,8 +16,10 @@ class ApplicationWindow(QtGui.QMainWindow):
         super(ApplicationWindow, self).__init__(parent)
         self.setWindowTitle("Mandelbrot Diver")
         # Application attrs
-        self._diving = False            # Visualization state variable
-        self._dive_timer_interval = 100 # Dive timer increment, in ms
+        self._diving = False              # Visualization state variable
+        self._dive_timer_interval = 100   # Dive timer increment, in ms
+        self._zoom_frac_per_frame = 0.01  # Zoom-in fraction per frame when 
+                                          # diving
         
         # Container widget
         self.main_widget = QtGui.QWidget(self)
@@ -78,7 +80,8 @@ class ApplicationWindow(QtGui.QMainWindow):
             # Only animate if a zooming point has been selected
             zp = self.mpl_mandelbrot.zoompoint
             if zp is None: return
-            xn, yn = zp
+            # Target location (i.e. the zoom point)
+            xt, yt = zp
             # Determine span of axes
             xlim = self.mpl_mandelbrot.axes.get_xlim()
             ylim = self.mpl_mandelbrot.axes.get_ylim()
@@ -86,18 +89,16 @@ class ApplicationWindow(QtGui.QMainWindow):
             yspan = ylim[1] - ylim[0]
             xc = xlim[0] + xspan / 2
             yc = ylim[0] + yspan / 2
-            # Set axes limits relative to zoom point
-            if xn > xc:
-                self.mpl_mandelbrot.axes.set_xlim(xlim[0] + 0.01*xspan, xlim[1])
-            else:
-                self.mpl_mandelbrot.axes.set_xlim(xlim[0], xlim[1] - 0.01*xspan)
-            if yn > yc:
-                self.mpl_mandelbrot.axes.set_ylim(ylim[0] + 0.01*yspan, ylim[1])
-            else:
-                self.mpl_mandelbrot.axes.set_ylim(ylim[0], ylim[1] - 0.01*yspan)
-
-        # Update visualization
-        self.mpl_mandelbrot.canvas.draw()
+            # Determine new center point and span from scaling
+            xn = xc + (xt - xc) * self._zoom_frac_per_frame
+            yn = yc + (yt - yc) * self._zoom_frac_per_frame
+            nxspan = (1 - self._zoom_frac_per_frame) * xspan
+            nyspan = (1 - self._zoom_frac_per_frame) * yspan
+            # Set new axes limits relative to new location
+            self.mpl_mandelbrot.axes.set_xlim(xn - nxspan/2, xn + nxspan/2)
+            self.mpl_mandelbrot.axes.set_ylim(yn - nyspan/2, yn + nyspan/2)
+            # Update visualization
+            self.mpl_mandelbrot.canvas.draw()
 
     def start(self):
         """
