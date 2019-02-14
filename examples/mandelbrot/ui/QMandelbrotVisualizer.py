@@ -1,4 +1,5 @@
 ### TODO: Hack in path to make examples subdirectory work
+from __future__ import print_function
 import sys
 sys.path.append('../../ui')
 from QMPLWidget import QMPLWidget

@@ -13,6 +13,8 @@ class ApplicationWindow(QtGui.QMainWindow):
         # Set up main window
         super(ApplicationWindow, self).__init__(parent)
         self.setWindowTitle("Mandelbrot Diver")
+        # Application attrs
+        self._diving = False    # State variable
         
         # Container widget
         self.main_widget = QtGui.QWidget(self)
@@ -26,6 +28,13 @@ class ApplicationWindow(QtGui.QMainWindow):
                                                      self.main_widget)
         self.main_layout.addWidget(self.mpl_mandelbrot)
         self.main_layout.addWidget(self.dive_control_button)
+
+        # Add a timer to initiate zooming of figure
+        self.dive_timer = QtCore.QTimer()
+
+        # Hook up events to callbacks
+        self.dive_control_button.clicked.connect(self.toggle_dive)
+        self.dive_timer.timeout.connect(self.increment_zoom)
 
         # Compute initial mandelbrot set
         xmin, xmax, xn = -2.25, 0.75, 3000/2
@@ -42,6 +51,17 @@ class ApplicationWindow(QtGui.QMainWindow):
                                              extent=[xmin, xmax, ymin, ymax],
                                              cmap=cm.plasma)
 
+    def toggle_dive(self):
+        if self._diving:
+            self.dive_control_button.setText("Start Diving")
+            self._diving = False
+        else:
+            self.dive_control_button.setText("Pause Diving")
+            self._diving = True
+
+    def increment_zoom(self):
+        if self._diving:
+            print 'Increment zoom'
 
 if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)
