@@ -78,16 +78,28 @@ class ApplicationWindow(QtGui.QMainWindow):
             # Only animate if a zooming point has been selected
             zp = self.mpl_mandelbrot.zoompoint
             if zp is None: return
-            # Increment zoom
-            self.xmin *= 0.99
-            self.xmax *= 0.99
-            self.ymin *= 0.99
-            self.ymax *= 0.99
-            # Pan if necessary
+            xn, yn = zp
+            # Determine span of axes
+            xlim = self.mpl_mandelbrot.axes.get_xlim()
+            ylim = self.mpl_mandelbrot.axes.get_ylim()
+            xspan = xlim[1] - xlim[0]
+            yspan = ylim[1] - ylim[0]
+            xc = xspan / 2
+            yc = yspan / 2
+            # New span after zoom
+            nxspan = xspan * 0.99
+            nyspan = yspan * 0.99
+            # Set axes limits relative to zoom point
+            if xn < xc:
+                self.mpl_mandelbrot.axes.set_xlim(left=xlim[0] + (xspan - nxspan))
+            else:
+                self.mpl_mandelbrot.axes.set_xlim(right=xlim[1] - (xspan - nxspan))
+            if yn < yc:
+                self.mpl_mandelbrot.axes.set_ylim(bottom=ylim[0] + (yspan - nyspan))
+            else:
+                self.mpl_mandelbrot.axes.set_ylim(top=ylim[1] - (yspan - nyspan))
 
         # Update visualization
-        self.mpl_mandelbrot.axes.set_xlim(self.xmin, self.xmax)
-        self.mpl_mandelbrot.axes.set_ylim(self.ymin, self.ymax)
         self.mpl_mandelbrot.canvas.draw()
 
     def start(self):
