@@ -1,4 +1,6 @@
+from __future__ import division
 import sys
+import numpy as np
 from PySide import QtCore, QtGui
 from matplotlib import cm
 
@@ -55,7 +57,8 @@ class ApplicationWindow(QtGui.QMainWindow):
                                                      self.xmax, 
                                                      self.ymin, 
                                                      self.ymax],
-                                             cmap=cm.plasma)
+                                             cmap=cm.plasma,
+                                             animated=True)
 
         # Start the application
         self.start()
@@ -72,11 +75,15 @@ class ApplicationWindow(QtGui.QMainWindow):
         # Increment the degree of zooming, if the visualization is in the
         # "diving" state
         if self._diving:
-            # TODO: Modify algorithm to take into account the "zoompoint"
+            # Only animate if a zooming point has been selected
+            zp = self.mpl_mandelbrot.zoompoint
+            if zp is None: return
+            # Increment zoom
             self.xmin *= 0.99
             self.xmax *= 0.99
             self.ymin *= 0.99
             self.ymax *= 0.99
+            # Pan if necessary
 
         # Update visualization
         self.mpl_mandelbrot.axes.set_xlim(self.xmin, self.xmax)
