@@ -81,7 +81,7 @@ class ApplicationWindow(QtGui.QMainWindow):
                                                self.xn, self.yn,
                                                self.maxiter, self.horizon)
         # Update image
-        self.mpl_mandelbrot.image.set_data(self.mandelbrot_ary)
+        self.mpl_mandelbrot.image.set_data(np.flipud(self.mandelbrot_ary))
         self.mpl_mandelbrot.canvas.draw()
 
     def toggle_dive(self):
