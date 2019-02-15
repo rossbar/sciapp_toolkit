@@ -18,6 +18,7 @@ class ApplicationWindow(QtGui.QMainWindow):
         # Application attrs
         self._diving = False              # Visualization state variable
         self._dive_timer_interval = 100   # Dive timer increment, in ms
+        self._recompute_interval = 50 * self._dive_timer_interval
         self._zoom_frac_per_frame = 0.01  # Zoom-in fraction per frame when 
                                           # diving
         
@@ -36,10 +37,12 @@ class ApplicationWindow(QtGui.QMainWindow):
 
         # Add a timer to initiate zooming of figure
         self.dive_timer = QtCore.QTimer()
+        self.compute_timer = QtCore.QTimer()
 
         # Hook up events to callbacks
         self.dive_control_button.clicked.connect(self.toggle_dive)
         self.dive_timer.timeout.connect(self.increment_zoom)
+        self.compute_timer.timeout.connect(self.update_mandelbrot_image)
 
         # Compute initial mandelbrot set
         self.xmin, self.xmax, self.xn = -2.25, 0.75, 3000/2
@@ -65,13 +68,31 @@ class ApplicationWindow(QtGui.QMainWindow):
         # Start the application
         self.start()
 
+    def update_mandelbrot_image(self):
+        """
+        Recompute the mandelbrot set from the current axes limits.
+        """
+        print "Recomputing mandelbrot"
+        # Recompute
+        self.xmin, self.xmax = self.mpl_mandelbrot.axes.get_xlim()
+        self.ymin, self.ymax = self.mpl_mandelbrot.axes.get_ylim()
+        self.mandelbrot_ary = mandelbrot_image(self.xmin, self.xmax,
+                                               self.ymin, self.ymax,
+                                               self.xn, self.yn,
+                                               self.maxiter, self.horizon)
+        # Update image
+        self.mpl_mandelbrot.image.set_data(self.mandelbrot_ary)
+        self.mpl_mandelbrot.canvas.draw()
+
     def toggle_dive(self):
         if self._diving:
             self.dive_control_button.setText("Start Diving")
             self._diving = False
+            self.compute_timer.stop()
         else:
             self.dive_control_button.setText("Pause Diving")
             self._diving = True
+            self.compute_timer.start(self._recompute_interval)
 
     def increment_zoom(self):
         # Increment the degree of zooming, if the visualization is in the
