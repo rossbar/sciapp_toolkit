@@ -21,6 +21,13 @@ class ApplicationWindow(QtGui.QMainWindow):
         self._recompute_interval = 50 * self._dive_timer_interval
         self._zoom_frac_per_frame = 0.01  # Zoom-in fraction per frame when 
                                           # diving
+
+        # Default params for Mandelbrot computation - lifted directly from the
+        # matplotlib example
+        self.xmin, self.xmax, self.xn = -2.25, 0.75, 3000/2
+        self.ymin, self.ymax, self.yn = -1.25, 1.25, 2500/2
+        self.maxiter = 200
+        self.horizon = 2.0 ** 40
         
         # Container widget
         self.main_widget = QtGui.QWidget(self)
@@ -32,7 +39,13 @@ class ApplicationWindow(QtGui.QMainWindow):
         self.mpl_mandelbrot = QMandelbrotWidget(self.main_widget)
         self.dive_control_button = QtGui.QPushButton("Start Diving", 
                                                      self.main_widget)
+        self.maxiter_label = QtGui.QLabel("Max Iters:")
+        self.maxiter_lineedit = QtGui.QLineEdit(str(self.maxiter))
+        hlayout = QtGui.QHBoxLayout()
+        hlayout.addWidget(self.maxiter_label)
+        hlayout.addWidget(self.maxiter_lineedit)
         self.main_layout.addWidget(self.mpl_mandelbrot)
+        self.main_layout.addLayout(hlayout)
         self.main_layout.addWidget(self.dive_control_button)
 
         # Add a timer to initiate zooming of figure
@@ -44,11 +57,6 @@ class ApplicationWindow(QtGui.QMainWindow):
         self.dive_timer.timeout.connect(self.increment_zoom)
         self.compute_timer.timeout.connect(self.update_mandelbrot_image)
 
-        # Compute initial mandelbrot set
-        self.xmin, self.xmax, self.xn = -2.25, 0.75, 3000/2
-        self.ymin, self.ymax, self.yn = -1.25, 1.25, 2500/2
-        self.maxiter = 200
-        self.horizon = 2.0 ** 40
 
         self.mandelbrot_ary = mandelbrot_image(self.xmin, self.xmax, 
                                                self.ymin, self.ymax, 
@@ -73,6 +81,12 @@ class ApplicationWindow(QtGui.QMainWindow):
         Recompute the mandelbrot set from the current axes limits.
         """
         print "Recomputing mandelbrot"
+        # Grab iteration number from UI - use default as fallback
+        try:
+            max_iter = int(self.maxiter_lineedit.text())
+            self.maxiter = max_iter
+            print max_iter
+        except ValueError: pass
         # Recompute
         self.xmin, self.xmax = self.mpl_mandelbrot.axes.get_xlim()
         self.ymin, self.ymax = self.mpl_mandelbrot.axes.get_ylim()
