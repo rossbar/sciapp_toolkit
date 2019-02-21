@@ -102,31 +102,12 @@ class ApplicationWindow(QtGui.QMainWindow, Ui_MainWindow):
                                           self.ymin, self.ymax])
 
     def increment_zoom(self):
-        # Increment the degree of zooming, if the visualization is in the
-        # "diving" state
+        """
+        If application is currently in the "diving" state, increment the
+        zoom level of the mandelbrot visualization.
+        """
         if self._diving:
-            # Only animate if a zooming point has been selected
-            zp = self.mpl_mandelbrot.zoompoint
-            if zp is None: return
-            # Target location (i.e. the zoom point)
-            xt, yt = zp
-            # Determine span of axes
-            xlim = self.mpl_mandelbrot.axes.get_xlim()
-            ylim = self.mpl_mandelbrot.axes.get_ylim()
-            xspan = xlim[1] - xlim[0]
-            yspan = ylim[1] - ylim[0]
-            xc = xlim[0] + xspan / 2
-            yc = ylim[0] + yspan / 2
-            # Determine new center point and span from scaling
-            xn = xc + (xt - xc) * self._zoom_frac_per_frame
-            yn = yc + (yt - yc) * self._zoom_frac_per_frame
-            nxspan = (1 - self._zoom_frac_per_frame) * xspan
-            nyspan = (1 - self._zoom_frac_per_frame) * yspan
-            # Set new axes limits relative to new location
-            self.mpl_mandelbrot.axes.set_xlim(xn - nxspan/2, xn + nxspan/2)
-            self.mpl_mandelbrot.axes.set_ylim(yn - nyspan/2, yn + nyspan/2)
-            # Update visualization
-            self.mpl_mandelbrot.canvas.draw()
+            self.mpl_mandelbrot.increment_zoom_anchored(self._zoom_frac_per_frame)
 
     def start(self):
         """
