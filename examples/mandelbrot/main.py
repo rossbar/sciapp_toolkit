@@ -18,7 +18,7 @@ class ApplicationWindow(QtGui.QMainWindow):
         # Application attrs
         self._diving = False              # Visualization state variable
         self._dive_timer_interval = 100   # Dive timer increment, in ms
-        self._recompute_interval = 50 * self._dive_timer_interval
+        self._recompute_interval = 100 * self._dive_timer_interval
         self._zoom_frac_per_frame = 0.01  # Zoom-in fraction per frame when 
                                           # diving
 
@@ -39,6 +39,7 @@ class ApplicationWindow(QtGui.QMainWindow):
         self.mpl_mandelbrot = QMandelbrotWidget(self.main_widget)
         self.dive_control_button = QtGui.QPushButton("Start Diving", 
                                                      self.main_widget)
+        self.reset_button = QtGui.QPushButton("Reset", self.main_widget)
         self.maxiter_label = QtGui.QLabel("Max Iters:")
         self.maxiter_lineedit = QtGui.QLineEdit(str(self.maxiter))
         hlayout = QtGui.QHBoxLayout()
@@ -47,6 +48,7 @@ class ApplicationWindow(QtGui.QMainWindow):
         self.main_layout.addWidget(self.mpl_mandelbrot)
         self.main_layout.addLayout(hlayout)
         self.main_layout.addWidget(self.dive_control_button)
+        self.main_layout.addWidget(self.reset_button)
 
         # Add a timer to initiate zooming of figure
         self.dive_timer = QtCore.QTimer()
@@ -54,10 +56,11 @@ class ApplicationWindow(QtGui.QMainWindow):
 
         # Hook up events to callbacks
         self.dive_control_button.clicked.connect(self.toggle_dive)
+        self.reset_button.clicked.connect(self.reset)
         self.dive_timer.timeout.connect(self.increment_zoom)
         self.compute_timer.timeout.connect(self.update_mandelbrot_image)
 
-
+        # Compute initial mandelbrot set
         self.mandelbrot_ary = mandelbrot_image(self.xmin, self.xmax, 
                                                self.ymin, self.ymax, 
                                                self.xn, self.yn,
@@ -108,6 +111,18 @@ class ApplicationWindow(QtGui.QMainWindow):
             self.dive_control_button.setText("Pause Diving")
             self._diving = True
             self.compute_timer.start(self._recompute_interval)
+
+    def reset(self):
+        """
+        Reset Mandelbrot image back to original state.
+        """
+        # Update image
+        self.mpl_mandelbrot.image.set_data(np.flipud(self.mandelbrot_ary))
+        self.mpl_mandelbrot.image.set_extent([self.xmin, self.xmax, 
+                                              self.ymin, self.ymax])
+        self.mpl_mandelbrot.axes.set_xlim(self.xmin, self.xmax)
+        self.mpl_mandelbrot.axes.set_ylim(self.ymin, self.ymax)
+        self.mpl_mandelbrot.canvas.draw()
 
     def increment_zoom(self):
         # Increment the degree of zooming, if the visualization is in the
