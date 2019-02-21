@@ -27,7 +27,7 @@ class ApplicationWindow(QtGui.QMainWindow):
         self.xmin, self.xmax, self.xn = -2.25, 0.75, 3000/2
         self.ymin, self.ymax, self.yn = -1.25, 1.25, 2500/2
         self.maxiter = 200
-        self.horizon = 2.0 ** 40
+        self.horizon = 2.0
         
         # Container widget
         self.main_widget = QtGui.QWidget(self)
@@ -88,14 +88,15 @@ class ApplicationWindow(QtGui.QMainWindow):
             print max_iter
         except ValueError: pass
         # Recompute
-        self.xmin, self.xmax = self.mpl_mandelbrot.axes.get_xlim()
-        self.ymin, self.ymax = self.mpl_mandelbrot.axes.get_ylim()
-        self.mandelbrot_ary = mandelbrot_image(self.xmin, self.xmax,
-                                               self.ymin, self.ymax,
-                                               self.xn, self.yn,
-                                               self.maxiter, self.horizon)
+        xmin, xmax = self.mpl_mandelbrot.axes.get_xlim()
+        ymin, ymax = self.mpl_mandelbrot.axes.get_ylim()
+        print xmin, xmax, ymin, ymax
+        ary = mandelbrot_image(xmin, xmax, ymin, ymax, self.xn, self.yn,
+                               self.maxiter, self.horizon)
+        ary = np.flipud(ary)
         # Update image
-        self.mpl_mandelbrot.image.set_data(np.flipud(self.mandelbrot_ary))
+        self.mpl_mandelbrot.image.set_data(ary)
+        self.mpl_mandelbrot.image.set_extent([xmin, xmax, ymin, ymax])
         self.mpl_mandelbrot.canvas.draw()
 
     def toggle_dive(self):
@@ -114,6 +115,7 @@ class ApplicationWindow(QtGui.QMainWindow):
         if self._diving:
             # Only animate if a zooming point has been selected
             zp = self.mpl_mandelbrot.zoompoint
+            print zp
             if zp is None: return
             # Target location (i.e. the zoom point)
             xt, yt = zp
