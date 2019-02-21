@@ -83,17 +83,14 @@ class ApplicationWindow(QtGui.QMainWindow):
         """
         Recompute the mandelbrot set from the current axes limits.
         """
-        print "Recomputing mandelbrot"
         # Grab iteration number from UI - use default as fallback
         try:
             max_iter = int(self.maxiter_lineedit.text())
             self.maxiter = max_iter
-            print max_iter
         except ValueError: pass
         # Recompute
         xmin, xmax = self.mpl_mandelbrot.axes.get_xlim()
         ymin, ymax = self.mpl_mandelbrot.axes.get_ylim()
-        print xmin, xmax, ymin, ymax
         ary = mandelbrot_image(xmin, xmax, ymin, ymax, self.xn, self.yn,
                                self.maxiter, self.horizon)
         ary = np.flipud(ary)
@@ -130,7 +127,6 @@ class ApplicationWindow(QtGui.QMainWindow):
         if self._diving:
             # Only animate if a zooming point has been selected
             zp = self.mpl_mandelbrot.zoompoint
-            print zp
             if zp is None: return
             # Target location (i.e. the zoom point)
             xt, yt = zp
