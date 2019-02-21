@@ -95,9 +95,7 @@ class ApplicationWindow(QtGui.QMainWindow):
                                self.maxiter, self.horizon)
         ary = np.flipud(ary)
         # Update image
-        self.mpl_mandelbrot.image.set_data(ary)
-        self.mpl_mandelbrot.image.set_extent([xmin, xmax, ymin, ymax])
-        self.mpl_mandelbrot.canvas.draw()
+        self.mpl_mandelbrot.update(ary, [xmin, xmax, ymin, ymax])
 
     def toggle_dive(self):
         if self._diving:
@@ -113,13 +111,12 @@ class ApplicationWindow(QtGui.QMainWindow):
         """
         Reset Mandelbrot image back to original state.
         """
-        # Update image
-        self.mpl_mandelbrot.image.set_data(np.flipud(self.mandelbrot_ary))
-        self.mpl_mandelbrot.image.set_extent([self.xmin, self.xmax, 
-                                              self.ymin, self.ymax])
+        # Reset axes
         self.mpl_mandelbrot.axes.set_xlim(self.xmin, self.xmax)
         self.mpl_mandelbrot.axes.set_ylim(self.ymin, self.ymax)
-        self.mpl_mandelbrot.canvas.draw()
+        # Reset image
+        self.mpl_mandelbrot.update(self.mandelbrot_ary,
+                                   [self.xmin, self.xmax, self.ymin, self.ymax])
 
     def increment_zoom(self):
         # Increment the degree of zooming, if the visualization is in the

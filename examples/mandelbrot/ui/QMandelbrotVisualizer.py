@@ -29,3 +29,11 @@ class QMandelbrotWidget(QMPLWidget):
         # Set zoom location on left-button click
         if mouse_event.button == 1:
             self.zoompoint = (x, y)
+
+    def update(self, image_ary, extent):
+        """
+        Update the visualization with a new image array.
+        """
+        self.image.set_data(image_ary)
+        self.image.set_extent(extent)
+        self.canvas.draw()
