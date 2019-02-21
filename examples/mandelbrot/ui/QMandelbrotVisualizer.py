@@ -30,7 +30,7 @@ class QMandelbrotWidget(QMPLWidget):
         if mouse_event.button == 1:
             self.zoompoint = (x, y)
 
-    def update(self, image_ary, extent):
+    def update_image(self, image_ary, extent):
         """
         Update the visualization with a new image array.
         """

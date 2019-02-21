@@ -40,7 +40,7 @@ class ApplicationWindow(QtGui.QMainWindow, Ui_MainWindow):
         self.dive_control_button.clicked.connect(self.toggle_dive)
         self.reset_button.clicked.connect(self.reset)
         self.dive_timer.timeout.connect(self.increment_zoom)
-        self.compute_timer.timeout.connect(self.update_mandelbrot_image)
+        self.compute_timer.timeout.connect(self.recompute_mandelbrot)
 
         # Compute initial mandelbrot set
         self.mandelbrot_ary = mandelbrot_image(self.xmin, self.xmax, 
@@ -61,7 +61,7 @@ class ApplicationWindow(QtGui.QMainWindow, Ui_MainWindow):
         # Start the application
         self.start()
 
-    def update_mandelbrot_image(self):
+    def recompute_mandelbrot(self):
         """
         Recompute the mandelbrot set from the current axes limits.
         """
@@ -77,7 +77,7 @@ class ApplicationWindow(QtGui.QMainWindow, Ui_MainWindow):
                                self.maxiter, self.horizon)
         ary = np.flipud(ary)
         # Update image
-        self.mpl_mandelbrot.update(ary, [xmin, xmax, ymin, ymax])
+        self.mpl_mandelbrot.update_image(ary, [xmin, xmax, ymin, ymax])
 
     def toggle_dive(self):
         if self._diving:
@@ -97,8 +97,9 @@ class ApplicationWindow(QtGui.QMainWindow, Ui_MainWindow):
         self.mpl_mandelbrot.axes.set_xlim(self.xmin, self.xmax)
         self.mpl_mandelbrot.axes.set_ylim(self.ymin, self.ymax)
         # Reset image
-        self.mpl_mandelbrot.update(self.mandelbrot_ary,
-                                   [self.xmin, self.xmax, self.ymin, self.ymax])
+        self.mpl_mandelbrot.update_image(self.mandelbrot_ary,
+                                         [self.xmin, self.xmax,
+                                          self.ymin, self.ymax])
 
     def increment_zoom(self):
         # Increment the degree of zooming, if the visualization is in the
