@@ -4,17 +4,17 @@ import numpy as np
 from PySide import QtCore, QtGui
 from matplotlib import cm
 
-from ui.QMandelbrotVisualizer import QMandelbrotWidget
 from mandelbrot import mandelbrot_image
+from ui.ui_main import Ui_MainWindow
 
-class ApplicationWindow(QtGui.QMainWindow):
+class ApplicationWindow(QtGui.QMainWindow, Ui_MainWindow):
     """
     Main window for Mandelbrot set visualization application.
     """
     def __init__(self, parent=None):
         # Set up main window
         super(ApplicationWindow, self).__init__(parent)
-        self.setWindowTitle("Mandelbrot Diver")
+
         # Application attrs
         self._diving = False              # Visualization state variable
         self._dive_timer_interval = 100   # Dive timer increment, in ms
@@ -28,28 +28,10 @@ class ApplicationWindow(QtGui.QMainWindow):
         self.ymin, self.ymax, self.yn = -1.25, 1.25, 2500/2
         self.maxiter = 200
         self.horizon = 2.0
+
+        # Set up the GUI
+        self.setup_ui(self)
         
-        # Container widget
-        self.main_widget = QtGui.QWidget(self)
-        self.main_widget.setFocus()
-        self.setCentralWidget(self.main_widget)
-
-        # Add a mandelbrot visualizer and control buttons to the main widget
-        self.main_layout = QtGui.QVBoxLayout(self.main_widget)
-        self.mpl_mandelbrot = QMandelbrotWidget(self.main_widget)
-        self.dive_control_button = QtGui.QPushButton("Start Diving", 
-                                                     self.main_widget)
-        self.reset_button = QtGui.QPushButton("Reset", self.main_widget)
-        self.maxiter_label = QtGui.QLabel("Max Iters:")
-        self.maxiter_lineedit = QtGui.QLineEdit(str(self.maxiter))
-        hlayout = QtGui.QHBoxLayout()
-        hlayout.addWidget(self.maxiter_label)
-        hlayout.addWidget(self.maxiter_lineedit)
-        self.main_layout.addWidget(self.mpl_mandelbrot)
-        self.main_layout.addLayout(hlayout)
-        self.main_layout.addWidget(self.dive_control_button)
-        self.main_layout.addWidget(self.reset_button)
-
         # Add a timer to initiate zooming of figure
         self.dive_timer = QtCore.QTimer()
         self.compute_timer = QtCore.QTimer()
