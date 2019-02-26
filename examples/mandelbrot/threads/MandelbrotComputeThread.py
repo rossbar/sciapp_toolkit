@@ -42,3 +42,7 @@ class MandelbrotThread(Thread):
         # Send result back to main thread
         self.display_queue.put((self._name, "mandelbrot", 
                                 (ary, [xmin, xmax, ymin, ymax])))
+
+    def cleanup(self):
+        self.display_queue.close()
+        self.input_queue.close()

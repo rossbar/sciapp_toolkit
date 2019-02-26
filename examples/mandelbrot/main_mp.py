@@ -154,6 +154,21 @@ class ApplicationWindow(QtGui.QMainWindow, Ui_MainWindow):
         self.pipe_to_mandelbrot_thread.send("START")
         self.request_mandelbrot_computation()
 
+    def closeEvent(self, event):
+        """
+        Override close event from QMainWindow to make sure threads are all
+        appropriately cleaned up.
+        """
+        # Stop the run loop in the mandelbrot thread
+        self.pipe_to_mandelbrot_thread.send("STOP")
+        # Shutdown queues to allow underlying processes to join
+        self.display_queue.close()
+        self.mandelbrot_queue.close()
+        # Join is blocking - waits for thread to exit nicely
+        self.mandelbrot_thread.join()
+        # Once the compute thread is done, accept the original close event
+        event.accept()
+
 if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)
     win = ApplicationWindow()
