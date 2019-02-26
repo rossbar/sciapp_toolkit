@@ -1,121 +1,123 @@
 from __future__ import division
+import os
 
 from multiprocessing import Process, Queue, Pipe
 from Queue import Empty as QueueEmpty
 
 class Thread(Process):
+    """
+    Processing 'thread' with I/O and runloop based on multiprocessing.Process
+    """
+    _data_timeout = 0.1     # 100 ms
     def __init__(self, inpipe, name, inq=None, outq=None, dispq=None):
-        # Base constructor
-        super(Process, self).__init__(parent)
-  
-        # Thread status
-        self.name = name
-        self.paused = True
-        self.abort = False
-        # If the thread is only to be used for processing one batch of data 
-        # (instead of streaming data), free up the thread after the processing
-        # loop has completed its first iteration
-        self.is_oneshot = False
+        """
+        Multiprocessing-based run loop.
+        """
+        super(Thread, self).__init__()
+        # Status
+        self._name = name
+        self._paused = True
+        self._abort = False
+        self._verbose = False
+        self._is_oneshot = False
+        self._newdata = False
+        self._parent_pid = os.getpid()
         # Communication
         self.input_queue = inq
         self.output_queue = outq
         self.display_queue = dispq
         self.in_pipe = inpipe
-        # Placeholders
-        self.newdata = False
-        self.messageList = []
-        self.data_in = []
-        self.data_out = []
-  
-    def run(self):
-        # Once 'run' is invoked, a new python process is started. Initialize
-        # the process.
-        self.initialize()
+        # Containers for data/messages
+        self.message_list = []
+        self.data_in = None
+        self.data_out = None
 
-        # Main run loop
-        while not self.abort:
-            # Thread starts in a paused state. If the thread is paused it waits
-            # here for a message from the control pipe telling it to start,
-            # pause, stop, or giving it other info
-            if self.paused:
-                self.in_pipe.poll(None)  # Blocking wait for message
-  
-            # Loop over control pipe for as long as there is something in it
-            while self.in_pipe.poll():
-                # Check for special signals: start, stop, and pause first
-                message = self.in_pipe.recv()
-                if "STOP" in message:
-                    self.abort = True
-                elif "PAUSE" in message:
-                    self.paused = True
-                elif "START" in message:
-                    self.paused = False
-                    self.start_hardware()
-                # If the message wasn't one of the special signals, append it
-                # to the message list
-                else:
-                    self.messageList.append(message)
-  
-            # NON-FLUSHING BEHAVIOR
-            if self.abort: break
-  
-            # Now try to get data from the queue
-            if self.input_queue != None:
-                try:
-                    # Blocking attempt to get data from queue
-                    self.data_in = self.input_queue.get(True, 0.1)  
-                    self.newdata = True
-                except QueueEmpty: pass
-            # If there is no input_queue, the thread must be a generator
-            # (like a DAQ thread) so make sure self.newdata is always true so
-            # that it can constantly be running its task
-            elif not self.paused: self.newdata = True
-            else: pass
-  
-            # After polling the messages and the data queue, if there is
-            # something to do (either new data or a new non-control message),
-            # do it.
-            if self.newdata or len(self.messageList) > 0:
-                self.task()
-  
-            # Back to top of the loop
-  
-        # Once out of the loop, run the cleanup function and notify the GUI the
-        # thread is done
-        self.cleanup()
-  
-    def task(self):
-        '''
-        Needs to be overridden by child object. Default behavior is to
-        print messages and input data.
-        '''
-        if len(self.messageList) > 0:
-            for i,message in enumerate(self.messageList): 
-                print "\tMessage %s: %s" %(i, message)
-            # Reset message list after using the messages
-            self.messageList = []
-        if self.newdata:
-            # After using new data, set newdata flag back to false
-            self.newdata = False
-  
+    def poll_control_pipe(self):
+        """
+        Extract and parse messages on control pipe. 
+
+        If standard control message received, take appropriate action.
+        """
+        while self.in_pipe.poll():
+            msg = self.in_pipe.recv()
+            # Handle standard control messages here
+            if   "STOP"  in msg: self._abort = True
+            elif "PAUSE" in msg: self._paused = True
+            elif "START" in msg: self._paused = False
+            # Non-standard message - append to list for subsequent action
+            else: self.message_list.append(msg)
+
+    def poll_data_queue(self):
+        """
+        Extract and notify of new data in input queue.
+        """
+        # I/O Process: relies on input queue for data
+        if self.input_queue is not None:
+            try:
+                self.data_in = self.input_queue.get(True, self._data_timeout)
+                self._newdata = True
+            except QueueEmpty: self._newdata = False
+        # Output-only thread (e.g. data acquisition)
+        else:
+            if not self._paused: self._newdata = True
+
+    def process_messages(self):
+        """
+        Handle messages if necessary.
+
+        Must be implemented in base class.
+        """
+        raise NotImplementedError
+
+    def process_data(self):
+        """
+        Process data if necessary.
+
+        Must be implemented in base class.
+        """
+        raise NotImplementedError
+
     def cleanup(self):
-        '''
-        Function to run after the run loop has exited. Must be overridden by
-        child class
-        '''
+        """
+        Clean up function run once thread run loop is terminated.
+        """
         pass
-  
+
     def initialize(self):
-        '''
-        Function to run before the main run loop in self.run starts. This is
-        for threads that deal with opening and closing files, since that gets
-        screwed up when its not all contained within the run loop.
-        '''
-        self.in_pipe.send((self.name, self.pid, "READY"))
-  
-    def start_hardware(self):
-        '''
-        Function to start any hardware controlled by the thread. Must be
-        overwritten.
-        '''
-        pass
+        """
+        Function run before entering main run loop.
+
+        NOTE: It is necessary to implement some things here (such as opening/
+        closing files). This is a quirk of multiprocessing, which fails to
+        pass non-picklable things from the constructor to the newly-created
+        process.
+        """
+        self._pid = os.getpid()
+
+    def run(self):
+        """
+        Override Process run method with an interruptible run-loop.
+        """
+        # Process initialization
+        self.initialize()
+        if self._verbose: print "%s initialized" %(self._name)
+        # Main run loop
+        while not self._abort:
+            # Thread starts in paused state. If thread is paused, wait here for
+            # message from control pipe (start, pause, stop, etc.)
+            if self._paused:
+                self.in_pipe.poll(None)     # Blocking
+            # Handle all control messages
+            self.poll_control_pipe()
+            # NON-FLUSHING BEHAVIOR
+            if self._abort: break
+            # Process non-control messages
+            if len(self.message_list) > 0:
+                self.process_messages()
+            # Handle incoming data
+            self.poll_data_queue()
+            if self._newdata:
+                self.process_data()
+        # Once out of run loop, clean up
+        self.cleanup()
+
