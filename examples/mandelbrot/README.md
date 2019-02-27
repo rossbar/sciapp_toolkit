@@ -72,6 +72,18 @@ You will likely notice that after you start "diving" in the single-threaded
 application, the GUI will occassionaly pause updating and become unresponsive
 (depending on your computational resources, it may even "gray-out" the UI).
 
+### `main_mp.py`
+
+This version of the application incorporates the `ThreadWrapper.Thread` class
+to separate the compuation associated with the Mandelbrot set from the main
+event loop.
+Doing so ensures that the computation associated with the Mandelbrot set
+does not interfere with the main thread so the UI remains responsive and the
+image updates are much smoother.
+Ultimately this version of the application is intended to illustrate how
+computationally-intensive tasks can be forked out to persistent, dedicated
+threads to enable streaming visualization of real-time data analysis.
+
 ## Exercises
 
 **Beginner** - Modify the color map
