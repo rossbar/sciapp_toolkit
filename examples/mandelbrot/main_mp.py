@@ -1,17 +1,17 @@
 from __future__ import division
 import sys
 import numpy as np
-from PySide import QtCore, QtGui
+from PySide2 import QtCore, QtWidgets
 from matplotlib import cm
 
 from ui.ui_main import Ui_MainWindow
 from multiprocessing import Pipe, Queue
-from Queue import Empty as QueueEmpty
+from queue import Empty as QueueEmpty
 from threads.MandelbrotComputeThread import MandelbrotThread
 
 from mandelbrot import mandelbrot_image
 
-class ApplicationWindow(QtGui.QMainWindow, Ui_MainWindow):
+class ApplicationWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     """
     Main window for Mandelbrot set visualization application.
     """
@@ -170,7 +170,7 @@ class ApplicationWindow(QtGui.QMainWindow, Ui_MainWindow):
         event.accept()
 
 if __name__ == "__main__":
-    app = QtGui.QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
     win = ApplicationWindow()
     win.show()
     sys.exit(app.exec_())

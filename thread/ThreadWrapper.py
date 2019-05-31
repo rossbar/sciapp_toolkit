@@ -1,8 +1,8 @@
-from __future__ import division
+from __future__ import division, print_function
 import os
 
 from multiprocessing import Process, Queue, Pipe
-from Queue import Empty as QueueEmpty
+from queue import Empty as QueueEmpty
 
 class Thread(Process):
     """
@@ -100,7 +100,7 @@ class Thread(Process):
         """
         # Process initialization
         self.initialize()
-        if self._verbose: print "%s initialized" %(self._name)
+        if self._verbose: print("%s initialized" %(self._name))
         # Main run loop
         while not self._abort:
             # Thread starts in paused state. If thread is paused, wait here for
