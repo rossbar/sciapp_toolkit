@@ -59,8 +59,8 @@ if __name__ == '__main__':
     from matplotlib import colors
     import matplotlib.pyplot as plt
 
-    xmin, xmax, xn = -2.25, +0.75, 3000/2
-    ymin, ymax, yn = -1.25, +1.25, 2500/2
+    xmin, xmax, xn = -2.25, +0.75, 3000 // 2
+    ymin, ymax, yn = -1.25, +1.25, 2500 // 2
     maxiter = 200
     horizon = 2.0 ** 40
 
