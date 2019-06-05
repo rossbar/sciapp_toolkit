@@ -6,10 +6,9 @@ from matplotlib import cm
 from multiprocessing import Pipe, Queue
 from queue import Empty as QueueEmpty
 
-from .ui.ui_main import Ui_MainWindow
-from .threads.MandelbrotComputeThread import MandelbrotThread
-
-from .mandelbrot import mandelbrot_image
+from sciapp_toolkit.examples.mandelbrot.ui.ui_main import Ui_MainWindow
+from sciapp_toolkit.examples.mandelbrot.threads.MandelbrotComputeThread import MandelbrotThread
+from sciapp_toolkit.examples.mandelbrot.mandelbrot import mandelbrot_image
 
 class ApplicationWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     """
