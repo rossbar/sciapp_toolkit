@@ -3,13 +3,13 @@ import sys
 import numpy as np
 from PySide2 import QtCore, QtWidgets
 from matplotlib import cm
-
-from ui.ui_main import Ui_MainWindow
 from multiprocessing import Pipe, Queue
 from queue import Empty as QueueEmpty
-from threads.MandelbrotComputeThread import MandelbrotThread
 
-from mandelbrot import mandelbrot_image
+from .ui.ui_main import Ui_MainWindow
+from .threads.MandelbrotComputeThread import MandelbrotThread
+
+from .mandelbrot import mandelbrot_image
 
 class ApplicationWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     """

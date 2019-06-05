@@ -1,10 +1,7 @@
 from __future__ import print_function
 import numpy as np
 
-### TODO: Hack in path to make examples subdirectory work
-import sys
-sys.path.append('../../ui')
-from QMPLWidget import QMPLWidget
+from sciapp_toolkit.ui.QMPLWidget import QMPLWidget
 
 class QMandelbrotWidget(QMPLWidget):
     """

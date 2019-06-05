@@ -1,12 +1,9 @@
 from __future__ import print_function
 import numpy as np
 
-### TODO: Hack in path to make examples subdirectory work
-import sys
-sys.path.append('../../thread')
-from ThreadWrapper import Thread
+from sciapp_toolkit.thread.ThreadWrapper import Thread
 
-from mandelbrot import mandelbrot_image
+from ..mandelbrot import mandelbrot_image
 
 ### TODO: Make MandelbrotComputation class and inherit it here
 class MandelbrotThread(Thread):

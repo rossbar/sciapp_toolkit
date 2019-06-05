@@ -4,8 +4,8 @@ import numpy as np
 from PySide2 import QtCore, QtWidgets
 from matplotlib import cm
 
-from mandelbrot import mandelbrot_image
-from ui.ui_main import Ui_MainWindow
+from sciapp_toolkit.examples.mandelbrot.mandelbrot import mandelbrot_image
+from sciapp_toolkit.examples.mandelbrot.ui.ui_main import Ui_MainWindow
 
 class ApplicationWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     """
