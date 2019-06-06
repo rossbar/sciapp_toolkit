@@ -15,6 +15,10 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/rossbar/sciapp_toolkit",
     packages=setuptools.find_packages(),
+    install_requires=[
+        "numpy",
+        "matplotlib",
+        "PySide2"],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: BSD License",
