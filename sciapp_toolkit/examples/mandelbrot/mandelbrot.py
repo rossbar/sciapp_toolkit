@@ -15,8 +15,8 @@ import numpy as np
 
 
 def mandelbrot_set(xmin, xmax, ymin, ymax, xn, yn, maxiter, horizon=2.0):
-    X = np.linspace(xmin, xmax, xn, dtype=np.float32)
-    Y = np.linspace(ymin, ymax, yn, dtype=np.float32)
+    X = np.linspace(xmin, xmax, int(xn), dtype=np.float32)
+    Y = np.linspace(ymin, ymax, int(yn), dtype=np.float32)
     C = X + Y[:, None]*1j
     N = np.zeros(C.shape, dtype=int)
     Z = np.zeros(C.shape, np.complex64)
